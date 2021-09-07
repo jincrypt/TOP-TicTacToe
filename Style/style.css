@@ -1,0 +1,15 @@
+.gameBoard {
+    display: grid;
+    grid-template-rows: 80px 80px 80px;
+}
+
+.gameBoardRow {
+    display: grid;
+    grid-template-columns: 80px 80px 80px;  
+    
+}
+
+.gameBoardCell {
+    border: 5px solid black;
+    text-align: center;
+}
