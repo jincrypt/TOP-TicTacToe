@@ -56,7 +56,7 @@ const displayController = (() => {
                     console.log(e);
 // Update to fill player's symbol. Might need some state for which player is currently going.
                     if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1) {
-                        gameBoard.setCell(i,j,'TEST');
+                        gameBoard.setCell(i,j,'X');
                         renderBoard();
                     }
                 })
@@ -69,6 +69,86 @@ const displayController = (() => {
     return { renderBoard }
 
 })();
+
+const gameController = (() => {
+    //win conditions
+    const winConditionX = cell => ( cell === 'X' );
+    const winConditionO = cell => ( cell === 'O' );
+    const _checkRows = () => {
+        for (let i = 0; i < 3; i++) {
+            let row = [];
+            for (let j = 0; j < 3; j++) {
+                row.push(gameBoard.getCell(i, j));
+            }
+            if (row.every(winConditionX) || row.every(winConditionO)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const _checkColumns = () => {
+        for (let j = 0; j < 3; j++) {
+            let column = [];
+            for (let i = 0; i < 3; i++) {
+                column.push(gameBoard.getCell(i,j));
+            }
+            if (column.every(winConditionX) || column.every(winConditionO)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const _checkDiagonals = () => {
+        let d1 = [];
+        let d2 = [];
+
+        for (let i = 0; i < 3; i++) {
+            d1.push(gameBoard.getCell(i,i));
+        }
+
+        for (let i = 2, j = 0; i >= 0; i--, j++) {
+            d2.push(gameBoard.getCell(i,j));
+        }
+        
+        if (d1.every(winConditionX) ||
+            d1.every(winConditionO) ||
+            d2.every(winConditionX) ||
+            d2.every(winConditionO)            
+        ) {
+            return true;
+        }
+        return false;
+    }
+
+    const isDraw = () => {
+        if (isWinner()) {
+            return false;
+        } else {
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++ ) {
+                    console.log(gameBoard.getCell(i,j));
+                    if (!gameBoard.getCell(i,j)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    const isWinner = () => {
+        if (_checkRows() || _checkColumns() || _checkDiagonals()) {
+            return true;
+        }
+        return false;
+    }
+
+    return { isWinner, isDraw }
+})()
+
+displayController.renderBoard();
 
 const player = playerFactory('TestPlayer', 'X');
 const computer = playerFactory('TestComputer', 'O');
