@@ -1,9 +1,9 @@
-const playerFactory = (name, marker) => {
+const playerFactory = (name, marker, turn) => {
     let _score = 0;
     const getScore = () => _score;
     const addScore = () => ++_score;
     const resetScore = () => { _score = 0 };
-    return { name, marker, getScore, addScore, resetScore }
+    return { name, marker, turn, getScore, addScore, resetScore }
 }
 
 const gameBoard = (() => {
@@ -22,10 +22,9 @@ const gameBoard = (() => {
     }
 
     const reset = () => {
-        let number = 1;
         for (let i = 0; i < _board.length; i++) {
             for (let j = 0; j < _board[i].length; j++) {
-                _board[i][j] = number++;
+                _board[i][j] = '';
             }
         }
     }
@@ -55,9 +54,30 @@ const displayController = (() => {
                 cell.addEventListener('click', (e) => {
                     console.log(e);
 // Update to fill player's symbol. Might need some state for which player is currently going.
-                    if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1) {
-                        gameBoard.setCell(i,j,'X');
+                    if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1 && !gameController.isGameComplete) {
+
+                        // Place current player's marker
+                        if (player1.turn) {
+                            gameBoard.setCell(i, j, player1.marker);                        
+                        } else {
+                            gameBoard.setCell(i, j, player2.marker);
+                        }
                         renderBoard();
+
+                        // Check win condition
+                        if (gameController.isWinner()) {
+                            console.log('Winner Found')
+                            gameController.isGameComplete = true;
+                        };
+                        // Check draw condition
+                        if (gameController.isDraw()) {
+                            console.log('Game Draw');
+                            gameController.isGameComplete = true;
+                        };
+                        player1.turn = !player1.turn;
+                        player2.turn = !player2.turn;
+
+                        // if either is true, end game somehow
                     }
                 })
                 row.appendChild(cell);
@@ -71,7 +91,9 @@ const displayController = (() => {
 })();
 
 const gameController = (() => {
-    //win conditions
+    const isGameComplete = false;
+
+// Win conditions
     const winConditionX = cell => ( cell === 'X' );
     const winConditionO = cell => ( cell === 'O' );
     const _checkRows = () => {
@@ -128,7 +150,6 @@ const gameController = (() => {
         } else {
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++ ) {
-                    console.log(gameBoard.getCell(i,j));
                     if (!gameBoard.getCell(i,j)) {
                         return false;
                     }
@@ -145,10 +166,29 @@ const gameController = (() => {
         return false;
     }
 
-    return { isWinner, isDraw }
+// Player Setup
+    let startButton = document.querySelector('.start');
+    startButton.addEventListener('click', (e) => {
+        console.log('wat');
+        let (playerA,playerB) = gameLogic.createPlayers();
+        gameBoard.reset();
+    })
+
+    return { isWinner, isDraw, isGameComplete }
 })()
 
 displayController.renderBoard();
 
-const player = playerFactory('TestPlayer', 'X');
-const computer = playerFactory('TestComputer', 'O');
+// const gameLogic = (() => {
+//     let playerA;
+//     let playerB;
+//     const createPlayers = () => {
+//         playerA = playerFactory(document.querySelector('#player1').value, 'X');
+//         playerB = playerFactory(document.querySelector('#player2').value, 'O');
+//         return (playerA, playerB)
+//     }
+
+//     return { createPlayers, playerA, playerB }
+// })()
+const player1 = playerFactory('TestPlayer', 'X', true);
+const player2 = playerFactory('TestPlayer2', 'O', false);
