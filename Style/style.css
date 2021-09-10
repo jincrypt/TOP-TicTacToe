@@ -1,3 +1,29 @@
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 5em;
+    /* text-align: center; */
+    font-size: 3rem;
+    padding-top: 3em;
+}
+
+.gameContainer {
+    display: none;
+    flex-direction: column;
+    /* justify-content: center; */
+    padding-top: 8em;
+    /* align-content: center; */
+    align-items: center;
+}
+
+
+#messageField {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
 .gameBoard {
     display: grid;
     grid-template-rows: 80px 80px 80px;

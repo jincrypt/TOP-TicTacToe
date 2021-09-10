@@ -1,9 +1,9 @@
-const playerFactory = (name, marker, turn) => {
+const playerFactory = (marker, turn) => {
     let _score = 0;
     const getScore = () => _score;
     const addScore = () => ++_score;
     const resetScore = () => { _score = 0 };
-    return { name, marker, turn, getScore, addScore, resetScore }
+    return { marker, turn, getScore, addScore, resetScore }
 }
 
 const gameBoard = (() => {
@@ -36,39 +36,33 @@ const gameBoard = (() => {
 const displayController = (() => {
     const boardDOM = document.querySelector('.gameBoard');
     const messageField = document.querySelector('#messageField');
+    const headerField = document.querySelector('header');
+    const gameContainer = document.querySelector('.gameContainer');
+    
+    headerField.style.display = "flex";
+    gameContainer.style.display = "none";
 
-    const playerVsPlayerField = () => {
-        const formWrapper = document.createElement('form');
-        const player1Field = document.createElement('input');
-        const player2Field = document.createElement('input');
+
+    const toggleDisplay = () => {
+        [headerField.style.display, gameContainer.style.display] = [gameContainer.style.display, headerField.style.display];
+    }
+
+
+    const twoPlayerField = () => {
         const startButton = document.createElement('input');
 
-        player1Field.type = 'text';
-        player2Field.type = 'text';
         startButton.type = 'submit';
-
-        player1Field.id = 'player1';
-        player2Field.id = 'player2';
-
-        player1Field.required = true;
-        player2Field.required = true;
-
-        startButton.className = 'start';
-        startButton.value = 'Start'
-        formWrapper.addEventListener('submit', (e) => {
-        // startButton.addEventListener('click', (e) => {
-// how to start?
-            e.preventDefault();
-            console.log('wat');
+        // startButton.className = 'start';
+        startButton.value = 'Two Player Mode'
+        startButton.addEventListener('click', (e) => {
+            toggleDisplay();
             gameBoard.reset();
+            renderBoard();
+            startButton.remove();
         })
 
         clearMessage();
-
-        formWrapper.appendChild(player1Field);
-        formWrapper.appendChild(player2Field);
-        formWrapper.appendChild(startButton);
-        messageField.appendChild(formWrapper);
+        messageField.appendChild(startButton);
     }
 
     const restartField = () => {
@@ -118,8 +112,8 @@ const displayController = (() => {
     }
 
 
-    playerVsPlayerField();
-    return { renderBoard, restartField }
+    twoPlayerField();
+    return { renderBoard, restartField, toggleDisplay }
 
 })();
 
@@ -213,8 +207,8 @@ const gameController = (() => {
 
             // Check win condition
             if (isWinner()) {
-                let winner = ([player1, player2].filter((player) => player.turn))[0].name;
-                console.log('Winner is' + winner);
+                let winner = ([player1, player2].filter((player) => player.turn))[0].marker;
+                console.log('Winner is ' + winner);
                 gameController.isGameComplete = true;
                 
             };
@@ -237,5 +231,12 @@ const gameController = (() => {
 
 displayController.renderBoard();
 
-const player1 = playerFactory('TestPlayer', 'X', true);
-const player2 = playerFactory('TestPlayer2', 'O', false);
+const player1 = playerFactory('X', true);
+const player2 = playerFactory('O', false);
+
+
+// TODO:
+
+// Refine display
+// Add scores ? optional
+// ref for design. Maybe page 1 will include computer. but make that page first. https://gkuzin13.github.io/tic-tac-toe/
