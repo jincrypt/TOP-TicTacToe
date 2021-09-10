@@ -35,6 +35,63 @@ const gameBoard = (() => {
 
 const displayController = (() => {
     const boardDOM = document.querySelector('.gameBoard');
+    const messageField = document.querySelector('#messageField');
+
+    const playerVsPlayerField = () => {
+        const formWrapper = document.createElement('form');
+        const player1Field = document.createElement('input');
+        const player2Field = document.createElement('input');
+        const startButton = document.createElement('input');
+
+        player1Field.type = 'text';
+        player2Field.type = 'text';
+        startButton.type = 'submit';
+
+        player1Field.id = 'player1';
+        player2Field.id = 'player2';
+
+        player1Field.required = true;
+        player2Field.required = true;
+
+        startButton.className = 'start';
+        startButton.value = 'Start'
+        formWrapper.addEventListener('submit', (e) => {
+        // startButton.addEventListener('click', (e) => {
+// how to start?
+            e.preventDefault();
+            console.log('wat');
+            gameBoard.reset();
+        })
+
+        clearMessage();
+
+        formWrapper.appendChild(player1Field);
+        formWrapper.appendChild(player2Field);
+        formWrapper.appendChild(startButton);
+        messageField.appendChild(formWrapper);
+    }
+
+    const restartField = () => {
+        const restartButton = document.createElement('button');
+
+        restartButton.className = 'restart';
+        restartButton.innerHTML = 'Restart';
+        restartButton.addEventListener('click', (e) => {
+            gameController.isGameComplete = false;
+            gameBoard.reset();
+            player1.turn = true;
+            player2.turn = false;
+            renderBoard();
+        })
+        clearMessage();
+        messageField.appendChild(restartButton);
+    }
+
+    const clearMessage = () => {
+        while (messageField.lastChild) {
+            messageField.lastChild.remove();
+        }
+    }
 
     const clearBoard = () => {
         while (boardDOM.lastChild) {
@@ -52,33 +109,7 @@ const displayController = (() => {
                 cell.textContent = gameBoard.getCell(i,j);
                 cell.className = 'gameBoardCell';
                 cell.addEventListener('click', (e) => {
-                    console.log(e);
-// Update to fill player's symbol. Might need some state for which player is currently going.
-                    if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1 && !gameController.isGameComplete) {
-
-                        // Place current player's marker
-                        if (player1.turn) {
-                            gameBoard.setCell(i, j, player1.marker);                        
-                        } else {
-                            gameBoard.setCell(i, j, player2.marker);
-                        }
-                        renderBoard();
-
-                        // Check win condition
-                        if (gameController.isWinner()) {
-                            console.log('Winner Found')
-                            gameController.isGameComplete = true;
-                        };
-                        // Check draw condition
-                        if (gameController.isDraw()) {
-                            console.log('Game Draw');
-                            gameController.isGameComplete = true;
-                        };
-                        player1.turn = !player1.turn;
-                        player2.turn = !player2.turn;
-
-                        // if either is true, end game somehow
-                    }
+                    gameController.playCell(i,j);
                 })
                 row.appendChild(cell);
             }
@@ -86,7 +117,9 @@ const displayController = (() => {
         }
     }
 
-    return { renderBoard }
+
+    playerVsPlayerField();
+    return { renderBoard, restartField }
 
 })();
 
@@ -166,29 +199,43 @@ const gameController = (() => {
         return false;
     }
 
-// Player Setup
-    let startButton = document.querySelector('.start');
-    startButton.addEventListener('click', (e) => {
-        console.log('wat');
-        let (playerA,playerB) = gameLogic.createPlayers();
-        gameBoard.reset();
-    })
+    const playCell = (i,j) => {
+        if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1 && !gameController.isGameComplete) {
+            // Place current player's marker
+            if (player1.turn) {
+                console.log('p1')
+                gameBoard.setCell(i, j, player1.marker);                        
+            } else {
+                console.log('p2')
+                gameBoard.setCell(i, j, player2.marker);
+            }
+            displayController.renderBoard();
 
-    return { isWinner, isDraw, isGameComplete }
+            // Check win condition
+            if (isWinner()) {
+                let winner = ([player1, player2].filter((player) => player.turn))[0].name;
+                console.log('Winner is' + winner);
+                gameController.isGameComplete = true;
+                
+            };
+            // Check draw condition
+            if (isDraw()) {
+                console.log('Game Draw');
+                gameController.isGameComplete = true;
+            };
+            player1.turn = !player1.turn;
+            player2.turn = !player2.turn;
+        } 
+        
+        if (gameController.isGameComplete) {
+            displayController.restartField();
+        }
+    }
+
+    return { isWinner, isDraw, isGameComplete, playCell }
 })()
 
 displayController.renderBoard();
 
-// const gameLogic = (() => {
-//     let playerA;
-//     let playerB;
-//     const createPlayers = () => {
-//         playerA = playerFactory(document.querySelector('#player1').value, 'X');
-//         playerB = playerFactory(document.querySelector('#player2').value, 'O');
-//         return (playerA, playerB)
-//     }
-
-//     return { createPlayers, playerA, playerB }
-// })()
 const player1 = playerFactory('TestPlayer', 'X', true);
 const player2 = playerFactory('TestPlayer2', 'O', false);
