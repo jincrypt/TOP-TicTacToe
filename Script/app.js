@@ -65,6 +65,16 @@ const displayController = (() => {
         messageField.appendChild(startButton);
     }
 
+
+    const winnerMessage = () => {
+        if (gameController.isWinner()) {
+            console.log('The Winner is ' + [player1, player2].filter(player => player.turn)[0].marker);
+        } else {
+            console.log('The game is a draw!')
+        }
+    }
+
+
     const restartField = () => {
         const restartButton = document.createElement('button');
 
@@ -113,7 +123,7 @@ const displayController = (() => {
 
 
     twoPlayerField();
-    return { renderBoard, restartField, toggleDisplay }
+    return { renderBoard, restartField, winnerMessage }
 
 })();
 
@@ -206,17 +216,11 @@ const gameController = (() => {
             displayController.renderBoard();
 
             // Check win condition
-            if (isWinner()) {
-                let winner = ([player1, player2].filter((player) => player.turn))[0].marker;
-                console.log('Winner is ' + winner);
+            if (isWinner() || isDraw()) {
                 gameController.isGameComplete = true;
-                
+                displayController.winnerMessage();                
             };
-            // Check draw condition
-            if (isDraw()) {
-                console.log('Game Draw');
-                gameController.isGameComplete = true;
-            };
+
             player1.turn = !player1.turn;
             player2.turn = !player2.turn;
         } 
