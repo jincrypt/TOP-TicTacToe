@@ -3,7 +3,6 @@ header {
     flex-direction: column;
     align-items: center;
     height: 5em;
-    /* text-align: center; */
     font-size: 3rem;
     padding-top: 3em;
 }
@@ -11,12 +10,14 @@ header {
 .gameContainer {
     display: none;
     flex-direction: column;
-    /* justify-content: center; */
     padding-top: 8em;
-    /* align-content: center; */
     align-items: center;
 }
 
+#resultField {
+    /* need fixed height so it doesn't muff up spacing when words are added */
+    height: 20px;
+}
 
 #messageField {
     display: flex;

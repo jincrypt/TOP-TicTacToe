@@ -1,9 +1,5 @@
 const playerFactory = (marker, turn) => {
-    let _score = 0;
-    const getScore = () => _score;
-    const addScore = () => ++_score;
-    const resetScore = () => { _score = 0 };
-    return { marker, turn, getScore, addScore, resetScore }
+    return { marker, turn }
 }
 
 const gameBoard = (() => {
@@ -27,6 +23,10 @@ const gameBoard = (() => {
                 _board[i][j] = '';
             }
         }
+        gameController.isGameComplete = false;
+        player1.turn = true;
+        player2.turn = false;
+        displayController.resultField.innerHTML = '';
     }
 
     return { setCell, getCell, reset }
@@ -38,7 +38,8 @@ const displayController = (() => {
     const messageField = document.querySelector('#messageField');
     const headerField = document.querySelector('header');
     const gameContainer = document.querySelector('.gameContainer');
-    
+    const resultField = document.querySelector('#resultField');
+
     headerField.style.display = "flex";
     gameContainer.style.display = "none";
 
@@ -52,13 +53,14 @@ const displayController = (() => {
         const startButton = document.createElement('input');
 
         startButton.type = 'submit';
-        // startButton.className = 'start';
         startButton.value = 'Two Player Mode'
         startButton.addEventListener('click', (e) => {
             toggleDisplay();
             gameBoard.reset();
             renderBoard();
-            startButton.remove();
+            clearMessage();
+            returnField();
+            restartField();
         })
 
         clearMessage();
@@ -68,9 +70,9 @@ const displayController = (() => {
 
     const winnerMessage = () => {
         if (gameController.isWinner()) {
-            console.log('The Winner is ' + [player1, player2].filter(player => player.turn)[0].marker);
+            resultField.innerHTML = 'The Winner is ' + [player1, player2].filter(player => player.turn)[0].marker;
         } else {
-            console.log('The game is a draw!')
+            resultField.innerHTML = 'The game is a draw!';
         }
     }
 
@@ -81,14 +83,25 @@ const displayController = (() => {
         restartButton.className = 'restart';
         restartButton.innerHTML = 'Restart';
         restartButton.addEventListener('click', (e) => {
-            gameController.isGameComplete = false;
             gameBoard.reset();
-            player1.turn = true;
-            player2.turn = false;
             renderBoard();
         })
-        clearMessage();
         messageField.appendChild(restartButton);
+    }
+
+
+    const returnField = () => {
+        const returnButton = document.createElement('button');
+
+        returnButton.className = 'return';
+        returnButton.innerHTML = 'Game Mode';
+        returnButton.addEventListener('click', (e) => {
+            gameBoard.reset();
+            toggleDisplay();
+            clearMessage();
+            twoPlayerField();
+        })
+        messageField.appendChild(returnButton);
     }
 
     const clearMessage = () => {
@@ -97,11 +110,13 @@ const displayController = (() => {
         }
     }
 
+
     const clearBoard = () => {
         while (boardDOM.lastChild) {
             boardDOM.lastChild.remove();
         }
     }
+
 
     const renderBoard = () => {
         clearBoard();
@@ -121,16 +136,16 @@ const displayController = (() => {
         }
     }
 
-
+    // manually execute button for now, but how do i create it with AI mode?
     twoPlayerField();
-    return { renderBoard, restartField, winnerMessage }
+    return { renderBoard, restartField, winnerMessage, resultField }
 
 })();
 
 const gameController = (() => {
     const isGameComplete = false;
 
-// Win conditions
+    // Win conditions
     const winConditionX = cell => ( cell === 'X' );
     const winConditionO = cell => ( cell === 'O' );
     const _checkRows = () => {
@@ -219,21 +234,15 @@ const gameController = (() => {
             if (isWinner() || isDraw()) {
                 gameController.isGameComplete = true;
                 displayController.winnerMessage();                
-            };
-
-            player1.turn = !player1.turn;
-            player2.turn = !player2.turn;
+            } else {
+                player1.turn = !player1.turn;
+                player2.turn = !player2.turn;
+            }
         } 
-        
-        if (gameController.isGameComplete) {
-            displayController.restartField();
-        }
     }
 
     return { isWinner, isDraw, isGameComplete, playCell }
 })()
-
-displayController.renderBoard();
 
 const player1 = playerFactory('X', true);
 const player2 = playerFactory('O', false);
