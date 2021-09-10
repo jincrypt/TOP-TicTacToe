@@ -29,7 +29,11 @@ const gameBoard = (() => {
         displayController.resultField.innerHTML = '';
     }
 
-    return { setCell, getCell, reset }
+    const readBoard = () => {
+        return _board;
+    }
+
+    return { setCell, getCell, reset, readBoard }
 })();
 
 
@@ -48,13 +52,12 @@ const displayController = (() => {
         [headerField.style.display, gameContainer.style.display] = [gameContainer.style.display, headerField.style.display];
     }
 
-
-    const twoPlayerField = () => {
-        const startButton = document.createElement('input');
-
-        startButton.type = 'submit';
-        startButton.value = 'Two Player Mode'
-        startButton.addEventListener('click', (e) => {
+    const computerField = () => {
+        const computerStartButton = document.createElement('input');
+        computerStartButton.type = 'submit';
+        computerStartButton.value = 'vs Computer'
+        computerStartButton.addEventListener('click', (e) => {
+            gameController.computerMode = true;
             toggleDisplay();
             gameBoard.reset();
             renderBoard();
@@ -62,8 +65,24 @@ const displayController = (() => {
             returnField();
             restartField();
         })
+        messageField.appendChild(computerStartButton);
 
-        clearMessage();
+    }
+
+    const twoPlayerField = () => {
+        const startButton = document.createElement('input');
+
+        startButton.type = 'submit';
+        startButton.value = 'vs Player'
+        startButton.addEventListener('click', (e) => {
+            gameController.computerMode = false;
+            toggleDisplay();
+            gameBoard.reset();
+            renderBoard();
+            clearMessage();
+            returnField();
+            restartField();
+        })
         messageField.appendChild(startButton);
     }
 
@@ -99,6 +118,7 @@ const displayController = (() => {
             gameBoard.reset();
             toggleDisplay();
             clearMessage();
+            computerField();
             twoPlayerField();
         })
         messageField.appendChild(returnButton);
@@ -137,6 +157,7 @@ const displayController = (() => {
     }
 
     // manually execute button for now, but how do i create it with AI mode?
+    computerField();
     twoPlayerField();
     return { renderBoard, restartField, winnerMessage, resultField }
 
@@ -144,6 +165,7 @@ const displayController = (() => {
 
 const gameController = (() => {
     const isGameComplete = false;
+    const computerMode = false;
 
     // Win conditions
     const winConditionX = cell => ( cell === 'X' );
@@ -224,7 +246,7 @@ const gameController = (() => {
             if (player1.turn) {
                 console.log('p1')
                 gameBoard.setCell(i, j, player1.marker);                        
-            } else {
+            } else if (!gameController.computerMode) {
                 console.log('p2')
                 gameBoard.setCell(i, j, player2.marker);
             }
@@ -238,10 +260,64 @@ const gameController = (() => {
                 player1.turn = !player1.turn;
                 player2.turn = !player2.turn;
             }
+
+            // if playing against computer, let computer make a move immediately after you click
+            if (gameController.computerMode && !gameController.isGameComplete && player2.turn) {
+                let row0 = gameBoard.readBoard()[0];
+                let row1 = gameBoard.readBoard()[1];
+                let row2 = gameBoard.readBoard()[2];
+                let choices = [];
+
+                row0 = row0.reduce((result, currentValue, index) => {
+                    if (currentValue === '') {
+                        result.push(index);
+                    }
+                    return result;
+                }, []);
+
+                row1 = row1.reduce((result, currentValue, index) => {
+                    if (currentValue === '') {
+                        result.push(index);
+                    }
+                    return result;
+                }, []);
+
+                row2 = row2.reduce((result, currentValue, index) => {
+                    if (currentValue === '') {
+                        result.push(index);
+                    }
+                    return result;
+                }, []);
+
+                if (row0.length > 0) {
+                    choices.push([0, row0[Math.floor(Math.random() * row0.length)]]);
+                }
+
+                if (row1.length > 0) {
+                    choices.push([1, row1[Math.floor(Math.random() * row1.length)]]);
+                }
+
+                if (row2.length > 0) {
+                    choices.push([2, row2[Math.floor(Math.random() * row2.length)]]);
+                }
+
+                gameBoard.setCell(...choices[Math.floor(Math.random() * choices.length)], "O");
+                displayController.renderBoard();
+                choices = [];
+
+
+                if (isWinner() || isDraw()) {
+                    gameController.isGameComplete = true;
+                    displayController.winnerMessage();
+                } else {
+                    player1.turn = !player1.turn;
+                    player2.turn = !player2.turn;
+                }
+            }
         } 
     }
 
-    return { isWinner, isDraw, isGameComplete, playCell }
+    return { isWinner, isDraw, isGameComplete, computerMode, playCell }
 })()
 
 const player1 = playerFactory('X', true);
@@ -252,4 +328,3 @@ const player2 = playerFactory('O', false);
 
 // Refine display
 // Add scores ? optional
-// ref for design. Maybe page 1 will include computer. but make that page first. https://gkuzin13.github.io/tic-tac-toe/
