@@ -263,48 +263,9 @@ const gameController = (() => {
 
             // if playing against computer, let computer make a move immediately after you click
             if (gameController.computerMode && !gameController.isGameComplete && player2.turn) {
-                let row0 = gameBoard.readBoard()[0];
-                let row1 = gameBoard.readBoard()[1];
-                let row2 = gameBoard.readBoard()[2];
-                let choices = [];
-
-                row0 = row0.reduce((result, currentValue, index) => {
-                    if (currentValue === '') {
-                        result.push(index);
-                    }
-                    return result;
-                }, []);
-
-                row1 = row1.reduce((result, currentValue, index) => {
-                    if (currentValue === '') {
-                        result.push(index);
-                    }
-                    return result;
-                }, []);
-
-                row2 = row2.reduce((result, currentValue, index) => {
-                    if (currentValue === '') {
-                        result.push(index);
-                    }
-                    return result;
-                }, []);
-
-                if (row0.length > 0) {
-                    choices.push([0, row0[Math.floor(Math.random() * row0.length)]]);
-                }
-
-                if (row1.length > 0) {
-                    choices.push([1, row1[Math.floor(Math.random() * row1.length)]]);
-                }
-
-                if (row2.length > 0) {
-                    choices.push([2, row2[Math.floor(Math.random() * row2.length)]]);
-                }
-
-                gameBoard.setCell(...choices[Math.floor(Math.random() * choices.length)], "O");
-                displayController.renderBoard();
-                choices = [];
-
+                // Choose between easyComputer & minimax Computer
+                // easyComputer();
+                bestMove();
 
                 if (isWinner() || isDraw()) {
                     gameController.isGameComplete = true;
@@ -317,14 +278,119 @@ const gameController = (() => {
         } 
     }
 
+    // AI Controls
+     
+    function bestMove() {
+        let bestScore = Infinity;
+        let move;                
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (gameBoard.getCell(i,j) === '') {
+                    gameBoard.setCell(i, j, "O");
+                    let score = minimax(i,j, 0, true, "X");
+                    gameBoard.setCell(i, j, '');
+                    if (score < bestScore) {
+                        bestScore = score;
+                        move = [i,j]
+                    }
+                }
+            }
+        }
+        gameBoard.setCell(...move, "O");
+        displayController.renderBoard();
+    }
+
+    // Markers are flipped (X & O), it's based on what was played prior to minimax()
+    let minimaxScores = {
+        'O': 10,
+        'X': -10,
+        'draw': 0
+    }
+
+    function minimax(i, j, depth, isMaximizing, marker) {
+        let resultWinner = gameController.isWinner();
+        let resultDraw = gameController.isDraw();
+        if (resultWinner) {
+            return minimaxScores[marker];
+        } else if (resultDraw) {
+            return minimaxScores['draw'];
+        }
+
+        if (isMaximizing) {
+            let bestScore = -Infinity;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (gameBoard.getCell(i,j) === '') {
+                        gameBoard.setCell(i,j, marker);
+                        let score = minimax(i,j, depth + 1, false, "O")
+                        gameBoard.setCell(i,j, '');
+                        bestScore = Math.max(score, bestScore);
+                    }
+                }
+            }
+            return bestScore;
+        } else {
+            let bestScore = Infinity;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (gameBoard.getCell(i,j) === '') {
+                        gameBoard.setCell(i,j, marker);
+                        let score = minimax(i,j, depth + 1, true, "X")
+                        gameBoard.setCell(i,j, '');
+                        bestScore = Math.min(score, bestScore);
+                    }
+                }
+            }
+            return bestScore;
+        }
+    }
+
+    function easyComputer() {
+        let row0 = gameBoard.readBoard()[0];
+        let row1 = gameBoard.readBoard()[1];
+        let row2 = gameBoard.readBoard()[2];
+        let choices = [];
+
+        row0 = row0.reduce((result, currentValue, index) => {
+            if (currentValue === '') {
+                result.push(index);
+            }
+            return result;
+        }, []);
+
+        row1 = row1.reduce((result, currentValue, index) => {
+            if (currentValue === '') {
+                result.push(index);
+            }
+            return result;
+        }, []);
+
+        row2 = row2.reduce((result, currentValue, index) => {
+            if (currentValue === '') {
+                result.push(index);
+            }
+            return result;
+        }, []);
+
+        if (row0.length > 0) {
+            choices.push([0, row0[Math.floor(Math.random() * row0.length)]]);
+        }
+
+        if (row1.length > 0) {
+            choices.push([1, row1[Math.floor(Math.random() * row1.length)]]);
+        }
+
+        if (row2.length > 0) {
+            choices.push([2, row2[Math.floor(Math.random() * row2.length)]]);
+        }
+
+        gameBoard.setCell(...choices[Math.floor(Math.random() * choices.length)], "O");
+        displayController.renderBoard();
+        choices = [];
+    }
+
     return { isWinner, isDraw, isGameComplete, computerMode, playCell }
 })()
 
 const player1 = playerFactory('X', true);
 const player2 = playerFactory('O', false);
-
-
-// TODO:
-
-// Refine display
-// Add scores ? optional
