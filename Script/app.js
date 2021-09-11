@@ -2,6 +2,9 @@ const playerFactory = (marker, turn) => {
     return { marker, turn }
 }
 
+const player1 = playerFactory('X', true);
+const player2 = playerFactory('O', false);
+
 const gameBoard = (() => {
     const _board = [
         ['1','2','3'],
@@ -130,7 +133,6 @@ const displayController = (() => {
         }
     }
 
-
     const clearBoard = () => {
         while (boardDOM.lastChild) {
             boardDOM.lastChild.remove();
@@ -150,15 +152,40 @@ const displayController = (() => {
                 cell.addEventListener('click', (e) => {
                     gameController.playCell(i,j);
                 })
+
+                // Grid Borders
+                if (i === 0) {
+                    cell.style.borderTop = "none";
+                }
+
+                if (j === 0) {
+                    cell.style.borderLeft = "none";
+                }
+
+                if (j === 2) { 
+                    cell.style.borderRight = "none";
+                }
+
+                if (i === 2) {
+                    cell.style.borderBottom = "none";
+                }
+
+                // O vs X colors
+                if (cell.textContent === "O") {
+                    cell.style.color = "rgb(58, 84, 204)";
+                } else {
+                    cell.style.color = "rgb(204, 58, 58)";
+                }
+
                 row.appendChild(cell);
             }
             boardDOM.appendChild(row);
         }
     }
 
-    // manually execute button for now, but how do i create it with AI mode?
     computerField();
     twoPlayerField();
+    
     return { renderBoard, restartField, winnerMessage, resultField }
 
 })();
@@ -240,54 +267,47 @@ const gameController = (() => {
         return false;
     }
 
+    const checkWinCondition = () => {
+        if (isWinner() || isDraw()) {
+            gameController.isGameComplete = true;
+            displayController.winnerMessage();                
+        } else {
+            player1.turn = !player1.turn;
+            player2.turn = !player2.turn;
+        }
+    }
+
     const playCell = (i,j) => {
         if (['X','O'].indexOf(gameBoard.getCell(i,j)) === -1 && !gameController.isGameComplete) {
             // Place current player's marker
             if (player1.turn) {
-                console.log('p1')
                 gameBoard.setCell(i, j, player1.marker);                        
             } else if (!gameController.computerMode) {
-                console.log('p2')
                 gameBoard.setCell(i, j, player2.marker);
             }
             displayController.renderBoard();
+            checkWinCondition();
 
-            // Check win condition
-            if (isWinner() || isDraw()) {
-                gameController.isGameComplete = true;
-                displayController.winnerMessage();                
-            } else {
-                player1.turn = !player1.turn;
-                player2.turn = !player2.turn;
-            }
-
-            // if playing against computer, let computer make a move immediately after you click
+            // AI Movement if facing computer:
             if (gameController.computerMode && !gameController.isGameComplete && player2.turn) {
                 // Choose between easyComputer & minimax Computer
                 // easyComputer();
                 bestMove();
-
-                if (isWinner() || isDraw()) {
-                    gameController.isGameComplete = true;
-                    displayController.winnerMessage();
-                } else {
-                    player1.turn = !player1.turn;
-                    player2.turn = !player2.turn;
-                }
+                checkWinCondition();
             }
         } 
     }
 
-    // AI Controls
-     
+    // AI Controls     
     function bestMove() {
         let bestScore = Infinity;
-        let move;                
+        let move;      
+
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 if (gameBoard.getCell(i,j) === '') {
                     gameBoard.setCell(i, j, "O");
-                    let score = minimax(i,j, 0, true, "X");
+                    let score = minimax(i,j, true, "X");
                     gameBoard.setCell(i, j, '');
                     if (score < bestScore) {
                         bestScore = score;
@@ -307,7 +327,7 @@ const gameController = (() => {
         'draw': 0
     }
 
-    function minimax(i, j, depth, isMaximizing, marker) {
+    function minimax(i, j, isMaximizing, marker) {
         let resultWinner = gameController.isWinner();
         let resultDraw = gameController.isDraw();
         if (resultWinner) {
@@ -322,7 +342,7 @@ const gameController = (() => {
                 for (let j = 0; j < 3; j++) {
                     if (gameBoard.getCell(i,j) === '') {
                         gameBoard.setCell(i,j, marker);
-                        let score = minimax(i,j, depth + 1, false, "O")
+                        let score = minimax(i,j, false, "O")
                         gameBoard.setCell(i,j, '');
                         bestScore = Math.max(score, bestScore);
                     }
@@ -335,7 +355,7 @@ const gameController = (() => {
                 for (let j = 0; j < 3; j++) {
                     if (gameBoard.getCell(i,j) === '') {
                         gameBoard.setCell(i,j, marker);
-                        let score = minimax(i,j, depth + 1, true, "X")
+                        let score = minimax(i,j, true, "X")
                         gameBoard.setCell(i,j, '');
                         bestScore = Math.min(score, bestScore);
                     }
@@ -391,6 +411,3 @@ const gameController = (() => {
 
     return { isWinner, isDraw, isGameComplete, computerMode, playCell }
 })()
-
-const player1 = playerFactory('X', true);
-const player2 = playerFactory('O', false);

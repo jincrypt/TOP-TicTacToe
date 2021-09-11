@@ -1,11 +1,21 @@
+body {
+    font-family: "Nunito", sans-serif;
+}
+
+#modeField {
+    font-size: 2rem;
+}
+
 header {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 3em;
     height: 5em;
     font-size: 3rem;
     padding-top: 3em;
 }
+
 
 .gameContainer {
     display: none;
@@ -15,14 +25,14 @@ header {
 }
 
 #resultField {
-    /* need fixed height so it doesn't muff up spacing when words are added */
-    height: 20px;
+    /* need fixed height so it doesn't adjust spacing when words are added */
+    height: 2em ;
 }
 
 #messageField {
     display: flex;
-    align-items: center;
-    flex-direction: column;
+    justify-content: center;
+    flex-direction: row;
 }
 
 .gameBoard {
@@ -33,10 +43,12 @@ header {
 .gameBoardRow {
     display: grid;
     grid-template-columns: 80px 80px 80px;  
-    
 }
 
 .gameBoardCell {
-    border: 5px solid black;
-    text-align: center;
+    display: flex;
+    font-size: 3rem;
+    border: 0.2rem solid black;
+    justify-content: center;
+    align-items: center;
 }
