@@ -14,3 +14,10 @@
 ## Extras:
 * Implement vs computer option. [COMPLETE]
 * Create an unbeatable AI using minimax algorithm (additional reading) [COMPLETE]
+
+## Todo:
+### Project has been completed for now. Future potential improvements:
+* Computer calculation is visibly slow after player presses button. Improve algorithm for faster minimax implementation (possibly using depth)
+* Alternative is to add constant delay for computer's move so it flows better.
+* Update CSS.
+* Add animation for move placement.
