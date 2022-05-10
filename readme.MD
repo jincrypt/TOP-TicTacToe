@@ -1,6 +1,6 @@
 # Project: Tic-Tac-Toe
 
-[Live Preview](https://jincrypt.github.io/TOP-TicTacToe/)
+[Live Preview](https://mkaleung.github.io/TOP-TicTacToe/)
 
 ## Criteria:
 * Skeleton HTML/CSS/JS
